@@ -12,7 +12,7 @@ function App() {
       <Switch>
         <Route path="/login" component={LoginComponent} />
         <AutheticatedComponent>
-          <Route path="/order" component={Home} />
+          <Route path="/" component={Home} />
         </AutheticatedComponent>
       </Switch>
     </BrowserRouter>

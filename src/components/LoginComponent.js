@@ -40,29 +40,36 @@ export default class Login extends Component {
     return (
       <div>
         <form
+          className="login-form"
           onSubmit={e => {
             this.onSubmit(e);
           }}
         >
-          <label>Email</label>
-          <input
-            type="text"
-            name="email"
-            value={this.state.email}
-            onChange={e => {
-              this.onInputChange(e);
-            }}
-          />
-          <label>Password</label>
-          <input
-            type="password"
-            name="password"
-            value={this.state.password}
-            onChange={e => {
-              this.onInputChange(e);
-            }}
-          />
-          <button type="submit">Login</button>
+          <h1>Login</h1>
+          <div className="txtb">
+            <input
+              type="text"
+              name="email"
+              placeholder="Email"
+              value={this.state.email}
+              onChange={e => {
+                this.onInputChange(e);
+              }}
+            />
+          </div>
+
+          <div className="txtb">
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              value={this.state.password}
+              onChange={e => {
+                this.onInputChange(e);
+              }}
+            />
+          </div>
+          <input type="submit" className="logbtn" value="Login"></input>
         </form>
       </div>
     );

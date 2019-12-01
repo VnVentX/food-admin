@@ -36,7 +36,7 @@ export default class Home extends React.Component {
         <BrowserRouter>
           <Sider trigger={null} collapsible collapsed={this.state.collapsed}>
             <div className="logo" />
-            <Menu theme="dark" mode="inline" defaultSelectedKeys={["1"]}>
+            <Menu theme="dark" mode="inline">
               <Menu.Item key="1">
                 <Link
                   to="/order"
@@ -104,10 +104,10 @@ export default class Home extends React.Component {
               }}
             >
               <Switch>
-                {/* Store trước */}
-                <Route path="/store" component={Store} />
                 {/* Order sau */}
-                <Route path={["/", "/order"]} component={Order} />
+                <Route path="/order" exact component={Order} />
+                {/* Store trước */}
+                <Route path="/store" exact component={Store} />
               </Switch>
             </Content>
           </Layout>

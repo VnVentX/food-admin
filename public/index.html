@@ -23,6 +23,19 @@
       To begin the development, run `npm start` or `yarn start`.
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" charset="utf-8"></script>
+  <script type="text/javascript">
+    $(".txtb input").on("focus", function () {
+      $(this).addClass("focus");
+    });
+
+    $(".txtb input").on("blur", function () {
+      if ($(this).val() == "")
+        $(this).removeClass("focus");
+    });
+  </script>
 </body>
+
+
 
 </html>
