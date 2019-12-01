@@ -1,13 +1,17 @@
 import React, { Component } from "react";
 import { getJwt, getRole } from "../helper/jwt";
-import { Table, Badge } from "antd";
-// import { Link } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { Table, Input, Button, Icon, Badge, Tag } from "antd";
+import Highlighter from "react-highlight-words";
 import axios from "axios";
 
 export default class ManageOrdee extends Component {
   state = {
     order: [],
-    role: ""
+    orderDetail: [],
+    role: "",
+    searchText: "",
+    searchedColumn: ""
   };
 
   orderData = async () => {
@@ -37,6 +41,89 @@ export default class ManageOrdee extends Component {
     });
   }
 
+  //Begin Search
+  getColumnSearchProps = dataIndex => ({
+    filterDropdown: ({
+      setSelectedKeys,
+      selectedKeys,
+      confirm,
+      clearFilters
+    }) => (
+      <div style={{ padding: 8 }}>
+        <Input
+          ref={node => {
+            this.searchInput = node;
+          }}
+          placeholder={`Search ${dataIndex}`}
+          value={selectedKeys[0]}
+          onChange={e =>
+            setSelectedKeys(e.target.value ? [e.target.value] : [])
+          }
+          onPressEnter={() =>
+            this.handleSearch(selectedKeys, confirm, dataIndex)
+          }
+          style={{ width: 188, marginBottom: 8, display: "block" }}
+        />
+        <Button
+          type="primary"
+          onClick={() => this.handleSearch(selectedKeys, confirm, dataIndex)}
+          icon="search"
+          size="small"
+          style={{ width: 90, marginRight: 8 }}
+        >
+          Search
+        </Button>
+        <Button
+          onClick={() => this.handleReset(clearFilters)}
+          size="small"
+          style={{ width: 90 }}
+        >
+          Reset
+        </Button>
+      </div>
+    ),
+    filterIcon: filtered => (
+      <Icon type="search" style={{ color: filtered ? "#1890ff" : undefined }} />
+    ),
+    onFilter: (value, record) =>
+      record[dataIndex]
+        .toString()
+        .toLowerCase()
+        .includes(value.toLowerCase()),
+    onFilterDropdownVisibleChange: visible => {
+      if (visible) {
+        setTimeout(() => this.searchInput.select());
+      }
+    },
+    render: text =>
+      this.state.searchedColumn === dataIndex ? (
+        <Highlighter
+          highlightStyle={{ backgroundColor: "#ffc069", padding: 0 }}
+          searchWords={[this.state.searchText]}
+          autoEscape
+          textToHighlight={text.toString()}
+        />
+      ) : (
+        text
+      )
+  });
+
+  handleSearch = (selectedKeys, confirm, dataIndex) => {
+    confirm();
+    this.setState({
+      searchText: selectedKeys[0],
+      searchedColumn: dataIndex
+    });
+  };
+
+  handleReset = clearFilters => {
+    clearFilters();
+    this.setState({ searchText: "" });
+  };
+
+  //End Search
+
+  //Expand OrderDetail
   expandedRowRender = () => {
     const columns = [
       { title: "Date", dataIndex: "date", key: "date" },
@@ -65,10 +152,51 @@ export default class ManageOrdee extends Component {
   };
 
   render() {
-    const columns = [
-      { title: "ID", dataIndex: "id", key: "id" },
-      { title: "Name", dataIndex: "name", key: "name" },
-      { title: "Description", dataIndex: "description", key: "description" }
+    //Order Columns
+    const orderColumns = [
+      {
+        title: "ID",
+        dataIndex: "id",
+        key: "id",
+        ...this.getColumnSearchProps("id")
+      },
+      {
+        title: "Name",
+        dataIndex: "name",
+        key: "name",
+        ...this.getColumnSearchProps("name")
+      },
+      {
+        title: "Description",
+        dataIndex: "description",
+        key: "description",
+        ...this.getColumnSearchProps("description")
+      },
+      {
+        title: "Status",
+        dataIndex: "name",
+        key: "name",
+        render: record =>
+          record === "Java" ? (
+            <Tag color="volcano" key={record}>
+              {record.toUpperCase()}
+            </Tag>
+          ) : (
+            <Tag color="green" key={record}>
+              {record.toUpperCase()}
+            </Tag>
+          )
+      },
+      {
+        title: "Action",
+        dataIndex: "status",
+        key: "status",
+        render: () => (
+          <Link to="">
+            <span>Xác nhận</span>
+          </Link>
+        )
+      }
     ];
 
     //Ép kiểu về Array cho object
@@ -85,7 +213,7 @@ export default class ManageOrdee extends Component {
         {this.state.role === "ROLE_ADMIN" ? (
           <Table
             className="components-table-demo-nested"
-            columns={columns}
+            columns={orderColumns}
             rowKey={datasource => datasource.id}
             dataSource={datasource}
             expandedRowRender={this.expandedRowRender}

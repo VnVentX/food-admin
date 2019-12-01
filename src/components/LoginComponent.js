@@ -45,7 +45,7 @@ export default class Login extends Component {
             this.onSubmit(e);
           }}
         >
-          <h1>Login</h1>
+          <h1>Food Admin</h1>
           <div className="txtb">
             <input
               type="text"
