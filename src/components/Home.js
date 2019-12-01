@@ -3,6 +3,8 @@ import { Layout, Menu, Icon, Breadcrumb } from "antd";
 import { BrowserRouter, Switch, Route, Link } from "react-router-dom";
 import Order from "./ManageOrder";
 import Store from "./ManageStore";
+import { getUser } from "../helper/jwt";
+
 const { Header, Sider, Content } = Layout;
 
 export default class Home extends React.Component {
@@ -13,6 +15,13 @@ export default class Home extends React.Component {
       breadcrumb: "Order",
       user: ""
     };
+  }
+
+  componentDidMount() {
+    const user = getUser();
+    this.setState({
+      user
+    });
   }
 
   toggle = () => {
@@ -78,6 +87,9 @@ export default class Home extends React.Component {
                 type={this.state.collapsed ? "menu-unfold" : "menu-fold"}
                 onClick={this.toggle}
               />
+              <h1
+                style={{ float: "right", marginRight: "1%" }}
+              >{`Welcome ${this.state.user}`}</h1>
             </Header>
             <Breadcrumb style={{ margin: "16px 0 0 20px" }}>
               <Breadcrumb.Item>Home</Breadcrumb.Item>

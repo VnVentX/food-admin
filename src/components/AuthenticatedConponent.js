@@ -20,6 +20,8 @@ class AuthenticatedConponent extends Component {
         }
       })
       .then(res => {
+        //item storage phải ở trước setState
+        localStorage.setItem("user", res.data.email);
         this.setState({
           user: res.data.email
         });
