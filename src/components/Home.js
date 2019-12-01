@@ -13,7 +13,8 @@ export default class Home extends React.Component {
     this.state = {
       collapsed: false,
       breadcrumb: "Order",
-      user: ""
+      user: "",
+      currentPage: []
     };
   }
 
@@ -22,6 +23,20 @@ export default class Home extends React.Component {
     this.setState({
       user
     });
+  }
+
+  componentWillMount() {
+    if (window.location.pathname === "/order") {
+      const currentPage = ["1"];
+      this.setState({
+        currentPage
+      });
+    } else if (window.location.pathname === "/store") {
+      const currentPage = ["2"];
+      this.setState({
+        currentPage
+      });
+    }
   }
 
   toggle = () => {
@@ -36,7 +51,11 @@ export default class Home extends React.Component {
         <BrowserRouter>
           <Sider trigger={null} collapsible collapsed={this.state.collapsed}>
             <div className="logo" />
-            <Menu theme="dark" mode="inline">
+            <Menu
+              theme="dark"
+              mode="inline"
+              defaultSelectedKeys={this.state.currentPage}
+            >
               <Menu.Item key="1">
                 <Link
                   to="/order"
@@ -104,10 +123,10 @@ export default class Home extends React.Component {
               }}
             >
               <Switch>
-                {/* Order sau */}
-                <Route path="/order" exact component={Order} />
                 {/* Store trước */}
                 <Route path="/store" exact component={Store} />
+                {/* Order sau */}
+                <Route path="/order" exact component={Order} />
               </Switch>
             </Content>
           </Layout>
