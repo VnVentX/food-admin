@@ -1,16 +1,19 @@
 import React, { Component } from "react";
-import { getJwt, getRole } from "../helper/jwt";
-import { Link } from "react-router-dom";
-import { Table, Input, Button, Icon, Badge, Tag } from "antd";
+import { getJwt, getRole, getID } from "../helper/jwt";
+import { Table, Input, Button, Icon, Modal, Form, Select } from "antd";
 import Highlighter from "react-highlight-words";
 import axios from "axios";
+const { Option } = Select;
 
 export default class ManageStore extends Component {
   state = {
     store: [],
+    category: [],
     role: "",
+    id: "",
     searchText: "",
-    searchedColumn: ""
+    searchedColumn: "",
+    visible: false
   };
 
   storeDataAdmin = async () => {
@@ -46,8 +49,10 @@ export default class ManageStore extends Component {
   componentDidMount() {
     //Get role phân quyền
     const role = getRole();
+    const id = getID();
     this.setState({
-      role
+      role,
+      id
     });
 
     //Cập nhật list data
@@ -138,6 +143,69 @@ export default class ManageStore extends Component {
   };
   //End Search
 
+  //Modal
+
+  //Load list category
+  showModal = async () => {
+    const jwt = getJwt();
+    await axios
+      .get("https://mffood.herokuapp.com/api/categories/", {
+        headers: {
+          token: jwt
+        }
+      })
+      .then(res => {
+        const category = res.data;
+        this.setState({ category, visible: true });
+      })
+      .catch(err => console.log(err));
+  };
+
+  //Load category option
+  categoryOption() {
+    return this.state.category.map((obj, i) => {
+      return (
+        <Option key={i} value={obj.idCategory}>
+          {obj.name}
+        </Option>
+      );
+    });
+  }
+
+  handleCancel = () => {
+    this.setState({ visible: false });
+  };
+
+  //save Store
+  handleCreate = () => {
+    const { form } = this.formRef.props;
+    form.validateFields(async (err, values) => {
+      if (err) {
+        return;
+      }
+      values.idUser = this.state.id;
+      const jwt = getJwt();
+      await axios
+        .post("https://mffood.herokuapp.com/api/stores/", values, {
+          headers: {
+            token: jwt
+          }
+        })
+        .then(res => {
+          this.storeData();
+        })
+        .catch(err => console.log(err));
+      console.log("Received values of form: ", values);
+      form.resetFields();
+      this.setState({ visible: false });
+    });
+  };
+
+  saveFormRef = formRef => {
+    this.formRef = formRef;
+  };
+  //End modal
+
   render() {
     //Store Columns
     const storeColumns = [
@@ -177,8 +245,9 @@ export default class ManageStore extends Component {
         { title: "Name", dataIndex: "name", key: "name" },
         { title: "Description", dataIndex: "description", key: "description" }
       ];
-      const data = record.categoryStoresByIdStore;
+      console.log(record);
 
+      const data = record.categoryStoresByIdStore;
       return (
         <Table
           columns={columns}
@@ -191,7 +260,7 @@ export default class ManageStore extends Component {
 
     return (
       <>
-        {this.state.role === "ROLE_STOREADMIN" ? (
+        {!this.state.role === "ROLE_STOREADMIN" ? (
           <Table
             {...this.state}
             className="components-table-demo-nested"
@@ -201,9 +270,86 @@ export default class ManageStore extends Component {
             expandedRowRender={storeDetail}
           />
         ) : (
-          <h1>User View</h1>
+          <>
+            <div className="modal">
+              <Button type="primary" onClick={this.showModal} icon="plus">
+                Add Store
+              </Button>
+              <CollectionCreateForm
+                wrappedComponentRef={this.saveFormRef}
+                visible={this.state.visible}
+                onCancel={this.handleCancel}
+                onCreate={this.handleCreate}
+                category={this.categoryOption()}
+              />
+            </div>
+            <Table
+              {...this.state}
+              className="components-table-demo-nested"
+              columns={storeColumns}
+              rowKey={datasource => datasource.idStore}
+              dataSource={datasource}
+              expandedRowRender={storeDetail}
+            />
+          </>
         )}
       </>
     );
   }
 }
+
+const CollectionCreateForm = Form.create({ name: "form_in_modal" })(
+  // eslint-disable-next-line
+  class extends React.Component {
+    render() {
+      const { visible, onCancel, onCreate, form, category } = this.props;
+      const { getFieldDecorator } = form;
+      return (
+        <Modal
+          visible={visible}
+          title="Add a new store"
+          okText="Create"
+          onCancel={onCancel}
+          onOk={onCreate}
+        >
+          <Form layout="vertical">
+            <Form.Item label="Name">
+              {getFieldDecorator("name", {
+                rules: [
+                  {
+                    required: true,
+                    message: "Please input store's name!"
+                  }
+                ]
+              })(<Input />)}
+            </Form.Item>
+            <Form.Item label="Description">
+              {getFieldDecorator("description", {
+                rules: [
+                  {
+                    required: true,
+                    message: "Please input store's description!"
+                  }
+                ]
+              })(<Input />)}
+            </Form.Item>
+            <Form.Item label="Category">
+              {getFieldDecorator("idCate", {
+                rules: [
+                  { required: true, message: "Please select store's category!" }
+                ]
+              })(
+                <Select
+                  placeholder="Select a catergory"
+                  onChange={this.handleSelectChange}
+                >
+                  {category}
+                </Select>
+              )}
+            </Form.Item>
+          </Form>
+        </Modal>
+      );
+    }
+  }
+);

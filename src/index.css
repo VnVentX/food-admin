@@ -134,3 +134,9 @@ body {
   text-align: center;
   font-size: 13px;
 }
+
+.modal {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}

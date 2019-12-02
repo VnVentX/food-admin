@@ -29,12 +29,14 @@ export default class Home extends React.Component {
     if (window.location.pathname === "/order") {
       const currentPage = ["1"];
       this.setState({
-        currentPage
+        currentPage,
+        breadcrumb: "Order"
       });
     } else if (window.location.pathname === "/store") {
       const currentPage = ["2"];
       this.setState({
-        currentPage
+        currentPage,
+        breadcrumb: "Store"
       });
     }
   }
