@@ -241,18 +241,17 @@ export default class ManageStore extends Component {
     //Store Detail
     const storeDetail = record => {
       const columns = [
-        { title: "ID", dataIndex: "idCategory", key: "idCategory" },
         { title: "Name", dataIndex: "name", key: "name" },
-        { title: "Description", dataIndex: "description", key: "description" }
+        { title: "Description", dataIndex: "description", key: "description" },
+        { title: "Price", dataIndex: "price", key: "price" }
       ];
-      console.log(record);
 
-      const data = record.categoryStoresByIdStore;
+      const data = record.productsByIdStore;
       return (
         <Table
           columns={columns}
           dataSource={data}
-          rowKey={data => data.idCategory}
+          rowKey={data => data.idProduct}
           pagination={false}
         />
       );
