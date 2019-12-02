@@ -15,14 +15,14 @@ export default class Login extends Component {
   onSubmit = async e => {
     e.preventDefault();
     await axios
-      .post("http://localhost:8080/ETutor/api/auth/signin", {
+      .post("https://mffood.herokuapp.com/api/users/login?isGmail=false", {
         email: this.state.email,
         password: this.state.password
       })
       .then(res => {
-        localStorage.setItem("token", res.data.accessToken);
-        //Test Role
-        localStorage.setItem("role", "ROLE_ADMIN");
+        localStorage.setItem("token", res.data.tokenJWT);
+        localStorage.setItem("id", res.data.idUser);
+        localStorage.setItem("role", res.data.userRoleDTO);
         this.props.history.push("/order");
       })
       .catch(e => {

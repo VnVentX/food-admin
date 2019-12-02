@@ -25,7 +25,7 @@ export default class Home extends React.Component {
     });
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     if (window.location.pathname === "/order") {
       const currentPage = ["1"];
       this.setState({
@@ -90,6 +90,7 @@ export default class Home extends React.Component {
                     localStorage.removeItem("token");
                     localStorage.removeItem("role");
                     localStorage.removeItem("user");
+                    localStorage.removeItem("id");
                     this.props.history.push("/login");
                   }}
                 >

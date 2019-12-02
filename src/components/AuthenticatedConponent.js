@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { getJwt } from "../helper/jwt";
+import { getJwt, getID } from "../helper/jwt";
 import axios from "axios";
 import { withRouter } from "react-router-dom";
 
@@ -10,13 +10,14 @@ class AuthenticatedConponent extends Component {
 
   componentDidMount() {
     const jwt = getJwt();
+    const id = getID();
     if (!jwt) {
       this.props.history.push("./login");
     }
     axios
-      .get("http://localhost:8080/ETutor/api/account", {
+      .get("https://mffood.herokuapp.com/api/users/" + id, {
         headers: {
-          Authorization: `Bearer ${jwt}`
+          token: jwt
         }
       })
       .then(res => {
