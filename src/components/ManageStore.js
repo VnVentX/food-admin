@@ -11,9 +11,15 @@ export default class ManageStore extends Component {
     category: [],
     role: "",
     id: "",
+    idStore: "",
     searchText: "",
     searchedColumn: "",
-    visible: false
+    isAddProduct: false,
+    isEditProduct: false,
+    modalTitle: "",
+    visible: false,
+    edittingProduct: {},
+    btnModal: ""
   };
 
   storeDataAdmin = async () => {
@@ -145,8 +151,8 @@ export default class ManageStore extends Component {
 
   //Modal
 
-  //Load list category
-  showModal = async () => {
+  //!Load list category
+  showCategory = async () => {
     const jwt = getJwt();
     await axios
       .get("https://mffood.herokuapp.com/api/categories/", {
@@ -156,12 +162,23 @@ export default class ManageStore extends Component {
       })
       .then(res => {
         const category = res.data;
-        this.setState({ category, visible: true });
+        this.setState({
+          category
+        });
       })
       .catch(err => console.log(err));
   };
 
-  //Load category option
+  showAddStoreModal = () => {
+    this.showCategory();
+    this.setState({
+      visible: true,
+      modalTitle: "Create new store",
+      btnModal: "Create"
+    });
+  };
+
+  //!Load category option
   categoryOption() {
     return this.state.category.map((obj, i) => {
       return (
@@ -173,28 +190,72 @@ export default class ManageStore extends Component {
   }
 
   handleCancel = () => {
-    this.setState({ visible: false });
+    this.setState({
+      visible: false,
+      isAddProduct: false,
+      isEditProduct: false,
+      edittingProduct: {}
+    });
   };
 
-  //save Store
+  //!save form
   handleCreate = () => {
     const { form } = this.formRef.props;
     form.validateFields(async (err, values) => {
       if (err) {
         return;
       }
-      values.idUser = this.state.id;
-      const jwt = getJwt();
-      await axios
-        .post("https://mffood.herokuapp.com/api/stores/", values, {
-          headers: {
-            token: jwt
-          }
-        })
-        .then(res => {
-          this.storeData();
-        })
-        .catch(err => console.log(err));
+      if (
+        this.state.isAddProduct === false &&
+        this.state.isEditProduct === false
+      ) {
+        //!save store
+        values.idUser = this.state.id;
+        const jwt = getJwt();
+        await axios
+          .post("https://mffood.herokuapp.com/api/stores/", values, {
+            headers: {
+              token: jwt
+            }
+          })
+          .then(res => {
+            this.storeData();
+          })
+          .catch(err => console.log(err));
+      } else if (this.state.isAddProduct === true) {
+        //!save product
+        values.idStore = this.state.idStore;
+        const jwt = getJwt();
+        await axios
+          .post("https://mffood.herokuapp.com/api/products/", values, {
+            headers: {
+              token: jwt
+            }
+          })
+          .then(res => {
+            this.storeData();
+          })
+          .catch(err => console.log(err));
+      } else if (this.state.isEditProduct === true) {
+        //!update product
+        const jwt = getJwt();
+        console.log("đang update");
+        //gán value vào object
+        values.idStore = this.state.edittingProduct.idStore;
+        values.idProduct = this.state.edittingProduct.idProduct;
+        values.imageLink = values.imagePath;
+        values.idCategory = values.idCate;
+        await axios
+          .put("https://mffood.herokuapp.com/api/products/", values, {
+            headers: {
+              token: jwt
+            }
+          })
+          .then(res => {
+            this.storeData();
+          })
+          .catch(err => console.log(err));
+      }
       console.log("Received values of form: ", values);
       form.resetFields();
       this.setState({ visible: false });
@@ -204,6 +265,7 @@ export default class ManageStore extends Component {
   saveFormRef = formRef => {
     this.formRef = formRef;
   };
+
   //End modal
 
   render() {
@@ -226,6 +288,29 @@ export default class ManageStore extends Component {
         dataIndex: "description",
         key: "description",
         ...this.getColumnSearchProps("description")
+      },
+      {
+        title: "Action",
+        dataIndex: "",
+        key: "x",
+        render: record => (
+          <button
+            className="ant-btn-link"
+            onClick={async () => {
+              const idStore = record.idStore;
+              await this.setState({
+                btnModal: "Create",
+                visible: true,
+                isAddProduct: true,
+                modalTitle: "Create new product",
+                idStore
+              });
+              this.showCategory();
+            }}
+          >
+            Add Product
+          </button>
+        )
       }
     ];
 
@@ -243,7 +328,45 @@ export default class ManageStore extends Component {
       const columns = [
         { title: "Name", dataIndex: "name", key: "name" },
         { title: "Description", dataIndex: "description", key: "description" },
-        { title: "Price", dataIndex: "price", key: "price" }
+        { title: "Price", dataIndex: "price", key: "price" },
+        {
+          title: "Action",
+          dataIndex: "",
+          key: "x",
+          render: record => (
+            <button
+              className="ant-btn-link"
+              onClick={async () => {
+                const jwt = getJwt();
+                await axios
+                  .get(
+                    "https://mffood.herokuapp.com/api/products/" +
+                      record.idProduct,
+                    {
+                      headers: {
+                        token: jwt
+                      }
+                    }
+                  )
+                  .then(res => {
+                    const edittingProduct = res.data;
+                    this.setState({ edittingProduct });
+                    console.log(this.state.edittingProduct);
+                  })
+                  .catch(err => console.log(err));
+                await this.setState({
+                  btnModal: "Update",
+                  visible: true,
+                  isEditProduct: true,
+                  modalTitle: "Edit product"
+                });
+                this.showCategory();
+              }}
+            >
+              Edit Product
+            </button>
+          )
+        }
       ];
 
       const data = record.productsByIdStore;
@@ -260,6 +383,7 @@ export default class ManageStore extends Component {
     return (
       <>
         {!this.state.role === "ROLE_STOREADMIN" ? (
+          //Admin
           <Table
             {...this.state}
             className="components-table-demo-nested"
@@ -269,9 +393,14 @@ export default class ManageStore extends Component {
             expandedRowRender={storeDetail}
           />
         ) : (
+          //User
           <>
             <div className="modal">
-              <Button type="primary" onClick={this.showModal} icon="plus">
+              <Button
+                type="primary"
+                onClick={this.showAddStoreModal}
+                icon="plus"
+              >
                 Add Store
               </Button>
               <CollectionCreateForm
@@ -280,6 +409,11 @@ export default class ManageStore extends Component {
                 onCancel={this.handleCancel}
                 onCreate={this.handleCreate}
                 category={this.categoryOption()}
+                isAddProduct={this.state.isAddProduct}
+                isEditProduct={this.state.isEditProduct}
+                title={this.state.modalTitle}
+                btnModal={this.state.btnModal}
+                edittingProduct={this.state.edittingProduct}
               />
             </div>
             <Table
@@ -300,65 +434,118 @@ export default class ManageStore extends Component {
 const CollectionCreateForm = Form.create({ name: "form_in_modal" })(
   // eslint-disable-next-line
   class extends React.Component {
+    reset = () => {
+      this.props.form.resetFields();
+    };
+
     render() {
-      const { visible, onCancel, onCreate, form, category } = this.props;
+      const {
+        title,
+        btnModal,
+        visible,
+        onCancel,
+        onCreate,
+        form,
+        category,
+        isAddProduct,
+        isEditProduct,
+        edittingProduct
+      } = this.props;
       const { getFieldDecorator } = form;
       return (
         <Modal
           visible={visible}
-          title="Add a new store"
-          okText="Create"
-          onCancel={onCancel}
+          title={title}
+          okText={btnModal}
+          onCancel={() => {
+            onCancel();
+            this.props.form.resetFields();
+          }}
           onOk={onCreate}
         >
           <Form layout="vertical">
             <Form.Item label="Name">
               {getFieldDecorator("name", {
+                initialValue: edittingProduct.name,
                 rules: [
                   {
                     required: true,
-                    message: "Please input store's name!"
+                    message: "Please input name!"
                   }
                 ]
-              })(<Input placeholder="Input store name" />)}
+              })(<Input placeholder="Input name" />)}
             </Form.Item>
             <Form.Item label="Description">
               {getFieldDecorator("description", {
+                initialValue: edittingProduct.description,
                 rules: [
                   {
                     required: true,
-                    message: "Please input store's description!"
+                    message: "Please input description!"
                   }
                 ]
-              })(<Input placeholder="Input store description" />)}
+              })(<Input placeholder="Input description" />)}
             </Form.Item>
             <Form.Item label="Category">
               {getFieldDecorator("idCate", {
-                rules: [
-                  { required: true, message: "Please select store's category!" }
-                ]
+                initialValue: edittingProduct.idCategory,
+                rules: [{ required: true, message: "Please select category!" }]
               })(
                 <Select
                   placeholder="Select a catergory"
                   onChange={this.handleSelectChange}
+                  onClick={this.showCategory}
                 >
                   {category}
                 </Select>
               )}
             </Form.Item>
-            <Form.Item label="Store Image">
-              {getFieldDecorator("imageUrl", {
-                rules: [
-                  {
-                    required: true,
-                    pattern: new RegExp(
-                      "^(https?|chrome):\/\/[^\s$.?#].[^\s]*$"
-                    ),
-                    message: "Please input valid link of your store's image!"
-                  }
-                ]
-              })(<Input placeholder="Input store image url" />)}
-            </Form.Item>
+            {/* //!form condition */}
+            {isAddProduct === true || isEditProduct === true ? (
+              //Create Product
+              <>
+                <Form.Item label="Price">
+                  {getFieldDecorator("price", {
+                    initialValue: edittingProduct.price,
+                    rules: [
+                      {
+                        required: true,
+                        message: "Please input product's price!"
+                      }
+                    ]
+                  })(<Input placeholder="Input price" type="number" />)}
+                </Form.Item>
+                <Form.Item label="Product Image">
+                  {getFieldDecorator("imagePath", {
+                    initialValue: edittingProduct.imageLink,
+                    rules: [
+                      {
+                        required: true,
+                        // pattern: new RegExp(
+                        //   "^(https?|ftp|torrent|image|irc)://(-.)?([^s/?.#-]+.?)+(/[^s]*)?$"
+                        // ),
+                        message: "Please input valid link of your image!"
+                      }
+                    ]
+                  })(<Input placeholder="Input store image url" />)}
+                </Form.Item>
+              </>
+            ) : (
+              // Create Store
+              <Form.Item label="Store Image">
+                {getFieldDecorator("imagePath", {
+                  rules: [
+                    {
+                      required: true,
+                      // pattern: new RegExp(
+                      //   "^(https?|ftp|torrent|image|irc)://(-.)?([^s/?.#-]+.?)+(/[^s]*)?$"
+                      // ),
+                      message: "Please input valid link of your store's image!"
+                    }
+                  ]
+                })(<Input placeholder="Input store image url" />)}
+              </Form.Item>
+            )}
           </Form>
         </Modal>
       );
