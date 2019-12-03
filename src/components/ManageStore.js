@@ -320,7 +320,7 @@ const CollectionCreateForm = Form.create({ name: "form_in_modal" })(
                     message: "Please input store's name!"
                   }
                 ]
-              })(<Input />)}
+              })(<Input placeholder="Input store name" />)}
             </Form.Item>
             <Form.Item label="Description">
               {getFieldDecorator("description", {
@@ -330,7 +330,7 @@ const CollectionCreateForm = Form.create({ name: "form_in_modal" })(
                     message: "Please input store's description!"
                   }
                 ]
-              })(<Input />)}
+              })(<Input placeholder="Input store description" />)}
             </Form.Item>
             <Form.Item label="Category">
               {getFieldDecorator("idCate", {
@@ -345,6 +345,19 @@ const CollectionCreateForm = Form.create({ name: "form_in_modal" })(
                   {category}
                 </Select>
               )}
+            </Form.Item>
+            <Form.Item label="Store Image">
+              {getFieldDecorator("imageUrl", {
+                rules: [
+                  {
+                    required: true,
+                    pattern: new RegExp(
+                      "^(https?|chrome):\/\/[^\s$.?#].[^\s]*$"
+                    ),
+                    message: "Please input valid link of your store's image!"
+                  }
+                ]
+              })(<Input placeholder="Input store image url" />)}
             </Form.Item>
           </Form>
         </Modal>

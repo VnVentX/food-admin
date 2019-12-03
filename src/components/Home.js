@@ -103,33 +103,27 @@ export default class Home extends React.Component {
             </Menu>
           </Sider>
           <Layout>
-            <Header style={{ background: "#fff", padding: 0 }}>
+            <Header
+              className="header-account"
+              style={{ background: "#fff", padding: 0 }}
+            >
               <Icon
-                className="trigger"
+                className="trigger icon-header"
                 type={this.state.collapsed ? "menu-unfold" : "menu-fold"}
                 onClick={this.toggle}
               />
-              <h1
-                style={{ float: "right", marginRight: "1%" }}
-              >{`Welcome ${this.state.user}`}</h1>
+              <h1>{`Welcome ${this.state.user}`}</h1>
             </Header>
             <Breadcrumb style={{ margin: "16px 0 0 20px" }}>
               <Breadcrumb.Item>Home</Breadcrumb.Item>
               <Breadcrumb.Item>{this.state.breadcrumb}</Breadcrumb.Item>
             </Breadcrumb>
-            <Content
-              style={{
-                margin: "24px 16px",
-                padding: 24,
-                background: "#fff",
-                minHeight: 280
-              }}
-            >
+            <Content className="container">
               <Switch>
                 {/* Store trước */}
                 <Route path="/store" exact component={Store} />
                 {/* Order sau */}
-                <Route path="/order" exact component={Order} />
+                <Route path={["/", "/order"]} exact component={Order} />
               </Switch>
             </Content>
           </Layout>

@@ -140,3 +140,23 @@ body {
   justify-content: flex-end;
   margin-bottom: 10px;
 }
+
+.header-account {
+  display: flex;
+  justify-content: space-between;
+}
+
+.header-account h1 {
+  margin-right: 1%;
+}
+.header-account .icon-header {
+  margin-top: 22px;
+}
+
+.container {
+  margin: 24px 16px;
+  padding: 24px;
+  background: #fff;
+  overflow-y: auto;
+  position: relative;
+}
