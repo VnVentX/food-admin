@@ -199,7 +199,8 @@ export default class ManageStore extends Component {
   };
 
   //!save form
-  handleCreate = () => {
+  handleCreate = e => {
+    e.preventDefault();
     const { form } = this.formRef.props;
     form.validateFields(async (err, values) => {
       if (err) {
@@ -245,6 +246,7 @@ export default class ManageStore extends Component {
         values.idProduct = this.state.edittingProduct.idProduct;
         values.imageLink = values.imagePath;
         values.idCategory = values.idCate;
+        values.enabled = true;
         await axios
           .put("https://mffood.herokuapp.com/api/products/", values, {
             headers: {
@@ -350,16 +352,15 @@ export default class ManageStore extends Component {
                   )
                   .then(res => {
                     const edittingProduct = res.data;
-                    this.setState({ edittingProduct });
-                    console.log(this.state.edittingProduct);
+                    this.setState({
+                      edittingProduct,
+                      btnModal: "Update",
+                      visible: true,
+                      isEditProduct: true,
+                      modalTitle: "Edit product"
+                    });
                   })
                   .catch(err => console.log(err));
-                await this.setState({
-                  btnModal: "Update",
-                  visible: true,
-                  isEditProduct: true,
-                  modalTitle: "Edit product"
-                });
                 this.showCategory();
               }}
             >
