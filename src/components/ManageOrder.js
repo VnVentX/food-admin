@@ -1,25 +1,25 @@
 import React, { Component } from "react";
-import { getJwt, getRole } from "../helper/jwt";
-import { Link } from "react-router-dom";
-import { Table, Input, Button, Icon, Badge, Tag } from "antd";
+import { getJwt, getRole, getID } from "../helper/jwt";
+import { Table, Input, Button, Icon } from "antd";
 import Highlighter from "react-highlight-words";
 import axios from "axios";
 
-export default class ManageOrdee extends Component {
+export default class ManageOrder extends Component {
   state = {
     order: [],
-    orderDetail: [],
     role: "",
+    id: "",
     searchText: "",
     searchedColumn: ""
   };
 
-  orderData = async () => {
+  //!all store
+  orderDataAdmin = async () => {
     const jwt = getJwt();
     await axios
-      .get("http://localhost:8080/ETutor/api/course", {
+      .get("https://mffood.herokuapp.com/api/stores/", {
         headers: {
-          Authorization: `Bearer ${jwt}`
+          token: jwt
         }
       })
       .then(res => {
@@ -29,16 +29,41 @@ export default class ManageOrdee extends Component {
       .catch(err => console.log(err));
   };
 
-  componentDidMount() {
-    //Cập nhật list data
-    this.orderData();
+  //!store by ROLE_STOREADMIN
+  orderData = async () => {
+    const jwt = getJwt();
+    const id = this.state.id;
+    await axios
+      .get("https://mffood.herokuapp.com/api/stores/byUser/" + id, {
+        headers: {
+          token: jwt
+        }
+      })
+      .then(res => {
+        const order = res.data;
+        this.setState({ order });
+      })
+      .catch(err => console.log(err));
+  };
 
+  retrievedData() {
+    if (this.state.role === "ROLE_ADMIN") {
+      this.orderDataAdmin();
+    } else if (this.state.role === "ROLE_STOREADMIN") {
+      this.orderData();
+    }
+  }
+
+  async componentDidMount() {
     //Get role phân quyền
     const role = getRole();
-
-    this.setState({
-      role
+    const id = getID();
+    await this.setState({
+      role,
+      id
     });
+    //Cập nhật list data
+    this.retrievedData();
   }
 
   //Begin Search
@@ -120,45 +145,16 @@ export default class ManageOrdee extends Component {
     clearFilters();
     this.setState({ searchText: "" });
   };
-
   //End Search
 
-  //Expand OrderDetail
-  expandedRowRender = () => {
-    const columns = [
-      { title: "Date", dataIndex: "date", key: "date" },
-      { title: "Name", dataIndex: "name", key: "name" },
-      {
-        title: "Status",
-        key: "state",
-        render: () => (
-          <span>
-            <Badge status="success" />
-            Finished
-          </span>
-        )
-      },
-      { title: "Upgrade Status", dataIndex: "upgradeNum", key: "upgradeNum" }
-    ];
-
-    const data = [];
-    data.push({
-      key: 1,
-      date: "2014-12-24 23:12:00",
-      name: "This is production name",
-      upgradeNum: "Upgraded: 56"
-    });
-    return <Table columns={columns} dataSource={data} pagination={false} />;
-  };
-
   render() {
-    //Order Columns
+    //Store Columns
     const orderColumns = [
       {
         title: "ID",
-        dataIndex: "id",
-        key: "id",
-        ...this.getColumnSearchProps("id")
+        dataIndex: "idStore",
+        key: "idStore",
+        ...this.getColumnSearchProps("idStore")
       },
       {
         title: "Name",
@@ -173,29 +169,48 @@ export default class ManageOrdee extends Component {
         ...this.getColumnSearchProps("description")
       },
       {
-        title: "Status",
-        dataIndex: "name",
-        key: "name",
-        render: record =>
-          record === "Java" ? (
-            <Tag color="volcano" key={record}>
-              {record.toUpperCase()}
-            </Tag>
-          ) : (
-            <Tag color="green" key={record}>
-              {record.toUpperCase()}
-            </Tag>
-          )
+        title: "Action",
+        dataIndex: "",
+        key: "x",
+        render: record => (
+          <button
+            className="ant-btn-link"
+            onClick={async () => {
+              const idStore = record.idStore;
+              await this.setState({
+                btnModal: "Create",
+                visible: true,
+                isAddProduct: true,
+                modalTitle: "Create new product",
+                idStore
+              });
+              this.showCategory();
+            }}
+          >
+            Add Product
+          </button>
+        )
+      }
+    ];
+
+    const orderColumnsAdmin = [
+      {
+        title: "ID",
+        dataIndex: "idStore",
+        key: "idStore",
+        ...this.getColumnSearchProps("idStore")
       },
       {
-        title: "Action",
-        dataIndex: "status",
-        key: "status",
-        render: () => (
-          <Link to="">
-            <span>Xác nhận</span>
-          </Link>
-        )
+        title: "Name",
+        dataIndex: "name",
+        key: "name",
+        ...this.getColumnSearchProps("name")
+      },
+      {
+        title: "Description",
+        dataIndex: "description",
+        key: "description",
+        ...this.getColumnSearchProps("description")
       }
     ];
 
@@ -208,18 +223,104 @@ export default class ManageOrdee extends Component {
       ? (datasource = order)
       : (datasource = order[0]);
 
+    //Order Detail
+    const orderDetail = record => {
+      const columns = [
+        { title: "Name", dataIndex: "name", key: "name" },
+        { title: "Description", dataIndex: "description", key: "description" },
+        { title: "Price", dataIndex: "price", key: "price" },
+        {
+          title: "Action",
+          dataIndex: "",
+          key: "x",
+          render: record => (
+            <button
+              className="ant-btn-link"
+              onClick={async () => {
+                const jwt = getJwt();
+                console.log("Product ID: " + record.idProduct);
+                await axios
+                  .get(
+                    "https://mffood.herokuapp.com/api/products/" +
+                      record.idProduct,
+                    {
+                      headers: {
+                        token: jwt
+                      }
+                    }
+                  )
+                  .then(res => {
+                    const edittingProduct = res.data;
+                    this.setState({
+                      edittingProduct,
+                      btnModal: "Update",
+                      visible: true,
+                      isEditProduct: true,
+                      modalTitle: "Edit product"
+                    });
+                  })
+                  .catch(err => console.log(err));
+                this.showCategory();
+              }}
+            >
+              Edit Product
+            </button>
+          )
+        }
+      ];
+
+      const data = record.productsByIdStore;
+      return (
+        <Table
+          columns={columns}
+          dataSource={data}
+          rowKey={data => data.idProduct}
+          pagination={false}
+        />
+      );
+    };
+    const orderDetailAdmin = record => {
+      const columns = [
+        { title: "Name", dataIndex: "name", key: "name" },
+        { title: "Description", dataIndex: "description", key: "description" },
+        { title: "Price", dataIndex: "price", key: "price" }
+      ];
+
+      const data = record.productsByIdStore;
+      return (
+        <Table
+          columns={columns}
+          dataSource={data}
+          rowKey={data => data.idProduct}
+          pagination={false}
+        />
+      );
+    };
+
     return (
       <>
         {this.state.role === "ROLE_ADMIN" ? (
+          //ADMIN
           <Table
+            {...this.state}
             className="components-table-demo-nested"
-            columns={orderColumns}
-            rowKey={datasource => datasource.id}
+            columns={orderColumnsAdmin}
+            rowKey={datasource => datasource.idStore}
             dataSource={datasource}
-            expandedRowRender={this.expandedRowRender}
+            expandedRowRender={orderDetailAdmin}
           />
         ) : (
-          <h1>User View</h1>
+          //STOREADMIN
+          <>
+            <Table
+              {...this.state}
+              className="components-table-demo-nested"
+              columns={orderColumns}
+              rowKey={datasource => datasource.idStore}
+              dataSource={datasource}
+              expandedRowRender={orderDetail}
+            />
+          </>
         )}
       </>
     );

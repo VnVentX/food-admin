@@ -22,6 +22,7 @@ export default class ManageStore extends Component {
     btnModal: ""
   };
 
+  //!all store
   storeDataAdmin = async () => {
     const jwt = getJwt();
     await axios
@@ -37,10 +38,12 @@ export default class ManageStore extends Component {
       .catch(err => console.log(err));
   };
 
+  //!store by ROLE_STOREADMIN
   storeData = async () => {
     const jwt = getJwt();
+    const id = this.state.id;
     await axios
-      .get("https://mffood.herokuapp.com/api/stores/", {
+      .get("https://mffood.herokuapp.com/api/stores/byUser/" + id, {
         headers: {
           token: jwt
         }
@@ -52,20 +55,24 @@ export default class ManageStore extends Component {
       .catch(err => console.log(err));
   };
 
-  componentDidMount() {
+  retrievedData() {
+    if (this.state.role === "ROLE_ADMIN") {
+      this.storeDataAdmin();
+    } else if (this.state.role === "ROLE_STOREADMIN") {
+      this.storeData();
+    }
+  }
+
+  async componentDidMount() {
     //Get role phân quyền
     const role = getRole();
     const id = getID();
-    this.setState({
+    await this.setState({
       role,
       id
     });
-
     //Cập nhật list data
-    if (this.state.role === "ROLE_STOREADMIN") {
-      this.storeDataAdmin();
-    }
-    this.storeData();
+    this.retrievedData();
   }
 
   //Begin Search
@@ -220,7 +227,7 @@ export default class ManageStore extends Component {
             }
           })
           .then(res => {
-            this.storeData();
+            this.retrievedData();
           })
           .catch(err => console.log(err));
       } else if (this.state.isAddProduct === true) {
@@ -234,7 +241,7 @@ export default class ManageStore extends Component {
             }
           })
           .then(res => {
-            this.storeData();
+            this.retrievedData();
           })
           .catch(err => console.log(err));
       } else if (this.state.isEditProduct === true) {
@@ -254,7 +261,7 @@ export default class ManageStore extends Component {
             }
           })
           .then(res => {
-            this.storeData();
+            this.retrievedData();
           })
           .catch(err => console.log(err));
       }
@@ -313,6 +320,27 @@ export default class ManageStore extends Component {
             Add Product
           </button>
         )
+      }
+    ];
+
+    const storeColumnsAdmin = [
+      {
+        title: "ID",
+        dataIndex: "idStore",
+        key: "idStore",
+        ...this.getColumnSearchProps("idStore")
+      },
+      {
+        title: "Name",
+        dataIndex: "name",
+        key: "name",
+        ...this.getColumnSearchProps("name")
+      },
+      {
+        title: "Description",
+        dataIndex: "description",
+        key: "description",
+        ...this.getColumnSearchProps("description")
       }
     ];
 
@@ -381,21 +409,38 @@ export default class ManageStore extends Component {
         />
       );
     };
+    const storeDetailAdmin = record => {
+      const columns = [
+        { title: "Name", dataIndex: "name", key: "name" },
+        { title: "Description", dataIndex: "description", key: "description" },
+        { title: "Price", dataIndex: "price", key: "price" }
+      ];
+
+      const data = record.productsByIdStore;
+      return (
+        <Table
+          columns={columns}
+          dataSource={data}
+          rowKey={data => data.idProduct}
+          pagination={false}
+        />
+      );
+    };
 
     return (
       <>
-        {!this.state.role === "ROLE_STOREADMIN" ? (
-          //Admin
+        {this.state.role === "ROLE_ADMIN" ? (
+          //ADMIN
           <Table
             {...this.state}
             className="components-table-demo-nested"
-            columns={storeColumns}
+            columns={storeColumnsAdmin}
             rowKey={datasource => datasource.idStore}
             dataSource={datasource}
-            expandedRowRender={storeDetail}
+            expandedRowRender={storeDetailAdmin}
           />
         ) : (
-          //User
+          //STOREADMIN
           <>
             <div className="modal">
               <Button
