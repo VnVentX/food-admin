@@ -340,6 +340,7 @@ export default class ManageStore extends Component {
               className="ant-btn-link"
               onClick={async () => {
                 const jwt = getJwt();
+                console.log("Product ID: " + record.idProduct);
                 await axios
                   .get(
                     "https://mffood.herokuapp.com/api/products/" +
