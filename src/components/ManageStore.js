@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { getJwt, getRole, getID } from "../helper/jwt";
-import { Table, Input, Button, Icon, Modal, Form, Select } from "antd";
+import { Table, Input, Button, Icon, Modal, Form, Select, Tag } from "antd";
 import Highlighter from "react-highlight-words";
 import axios from "axios";
 const { Option } = Select;
@@ -55,7 +55,13 @@ export default class ManageStore extends Component {
       .catch(err => console.log(err));
   };
 
-  retrievedData() {
+  async retrievedData() {
+    await this.setState({
+      edittingProduct: {},
+      isAddProduct: false,
+      isEditProduct: false,
+      idStore: "",
+    });
     if (this.state.role === "ROLE_ADMIN") {
       this.storeDataAdmin();
     } else if (this.state.role === "ROLE_STOREADMIN") {
@@ -265,7 +271,6 @@ export default class ManageStore extends Component {
           })
           .catch(err => console.log(err));
       }
-      console.log("Received values of form: ", values);
       form.resetFields();
       this.setState({ visible: false });
     });
@@ -276,6 +281,35 @@ export default class ManageStore extends Component {
   };
 
   //End modal
+
+  //!Verify Action
+  verifyStore = async () => {
+    const jwt = getJwt();
+    const id = this.state.idStore;
+    // await axios
+    //   .put(`https://mffood.herokuapp.com/api/stores/${id}`, {
+    //     headers: {
+    //       token: jwt,
+    //       "Content-Type": "application/json"
+    //     }
+    //   })
+    //   .then(() => {
+    //     this.retrievedData();
+    //   })
+    //   .catch(err => console.log(err));
+    try {
+      await fetch(`https://mffood.herokuapp.com/api/stores/${id}`, {
+        method: "PUT", // or 'PUT'
+        headers: {
+          "Content-Type": "application/json",
+          token: jwt
+        }
+      });
+      this.retrievedData();
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
 
   render() {
     //Store Columns
@@ -325,13 +359,7 @@ export default class ManageStore extends Component {
 
     const storeColumnsAdmin = [
       {
-        title: "ID",
-        dataIndex: "idStore",
-        key: "idStore",
-        ...this.getColumnSearchProps("idStore")
-      },
-      {
-        title: "Name",
+        title: "Store Name",
         dataIndex: "name",
         key: "name",
         ...this.getColumnSearchProps("name")
@@ -341,13 +369,49 @@ export default class ManageStore extends Component {
         dataIndex: "description",
         key: "description",
         ...this.getColumnSearchProps("description")
+      },
+      {
+        title: "Status",
+        dataIndex: "enabled",
+        key: "enabled",
+        render: enabled => (
+          <span>
+            {enabled === true ? (
+              <Tag color={"green"} key={enabled}>
+                ACTIVE
+              </Tag>
+            ) : (
+              <Tag color={"volcano"} key={enabled}>
+                DISABLE
+              </Tag>
+            )}
+          </span>
+        )
+      },
+      {
+        title: "Action",
+        dataIndex: "",
+        key: "x",
+        render: record => (
+          <button
+            className="ant-btn-link"
+            onClick={async () => {
+              const idStore = record.idStore;
+              await this.setState({
+                idStore
+              });
+              this.verifyStore();
+            }}
+          >
+            Change Status
+          </button>
+        )
       }
     ];
 
     //Ép kiểu về Array cho object
     const store = Array.of(this.state.store);
     var datasource = [];
-
     //Check list có bao nhiêu phần tử
     store[0].length === undefined
       ? (datasource = store)
@@ -568,9 +632,6 @@ const CollectionCreateForm = Form.create({ name: "form_in_modal" })(
                     rules: [
                       {
                         required: true,
-                        // pattern: new RegExp(
-                        //   "^(https?|ftp|torrent|image|irc)://(-.)?([^s/?.#-]+.?)+(/[^s]*)?$"
-                        // ),
                         message: "Please input valid link of your image!"
                       }
                     ]
@@ -581,12 +642,10 @@ const CollectionCreateForm = Form.create({ name: "form_in_modal" })(
               // Create Store
               <Form.Item label="Store Image">
                 {getFieldDecorator("imagePath", {
+                  initialValue: "",
                   rules: [
                     {
                       required: true,
-                      // pattern: new RegExp(
-                      //   "^(https?|ftp|torrent|image|irc)://(-.)?([^s/?.#-]+.?)+(/[^s]*)?$"
-                      // ),
                       message: "Please input valid link of your store's image!"
                     }
                   ]
