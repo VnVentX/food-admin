@@ -26,7 +26,10 @@ export default class Home extends React.Component {
   }
 
   UNSAFE_componentWillMount() {
-    if (window.location.pathname === "/order") {
+    if (
+      window.location.pathname === "/order" ||
+      window.location.pathname === "/"
+    ) {
       const currentPage = ["1"];
       this.setState({
         currentPage,
