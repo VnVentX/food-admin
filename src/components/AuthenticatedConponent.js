@@ -8,13 +8,13 @@ class AuthenticatedConponent extends Component {
     user: ""
   };
 
-  componentDidMount() {
+  async componentDidMount() {
     const jwt = getJwt();
     const id = getID();
     if (!jwt) {
       this.props.history.push("./login");
     }
-    axios
+    await axios
       .get("https://mffood.herokuapp.com/api/users/" + id, {
         headers: {
           token: jwt

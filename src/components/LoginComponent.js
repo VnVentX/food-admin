@@ -20,6 +20,12 @@ export default class Login extends Component {
         password: this.state.password
       })
       .then(res => {
+        if (
+          res.data.userRoleDTO !== "ROLE_STOREADMIN" ||
+          res.data.userRoleDTO !== "ROLE_ADMIN"
+        ) {
+          this.props.history.push("/login");
+        }
         localStorage.setItem("token", res.data.tokenJWT);
         localStorage.setItem("id", res.data.idUser);
         localStorage.setItem("role", res.data.userRoleDTO);

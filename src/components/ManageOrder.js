@@ -302,12 +302,6 @@ export default class ManageOrder extends Component {
     //Store Columns
     const storeColumns = [
       {
-        title: "ID Store",
-        dataIndex: "idStore",
-        key: "idStore",
-        ...this.getColumnSearchProps("idStore")
-      },
-      {
         title: "Store Name",
         dataIndex: "name",
         key: "name",

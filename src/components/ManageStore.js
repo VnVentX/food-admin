@@ -60,7 +60,7 @@ export default class ManageStore extends Component {
       edittingProduct: {},
       isAddProduct: false,
       isEditProduct: false,
-      idStore: "",
+      idStore: ""
     });
     if (this.state.role === "ROLE_ADMIN") {
       this.storeDataAdmin();
@@ -315,12 +315,6 @@ export default class ManageStore extends Component {
     //Store Columns
     const storeColumns = [
       {
-        title: "ID",
-        dataIndex: "idStore",
-        key: "idStore",
-        ...this.getColumnSearchProps("idStore")
-      },
-      {
         title: "Name",
         dataIndex: "name",
         key: "name",
@@ -331,6 +325,24 @@ export default class ManageStore extends Component {
         dataIndex: "description",
         key: "description",
         ...this.getColumnSearchProps("description")
+      },
+      {
+        title: "Status",
+        dataIndex: "enabled",
+        key: "enabled",
+        render: enabled => (
+          <span>
+            {enabled === true ? (
+              <Tag color={"green"} key={enabled}>
+                ACTIVE
+              </Tag>
+            ) : (
+              <Tag color={"volcano"} key={enabled}>
+                DISABLE
+              </Tag>
+            )}
+          </span>
+        )
       },
       {
         title: "Action",
