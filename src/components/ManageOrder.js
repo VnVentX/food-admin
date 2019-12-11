@@ -6,7 +6,10 @@ import axios from "axios";
 import "../modal.css";
 
 export default class ManageOrder extends Component {
+  signal = axios.CancelToken.source();
+
   state = {
+    isLoading: false,
     store: [],
     storeID: "",
     order: [],
@@ -18,35 +21,51 @@ export default class ManageOrder extends Component {
 
   //!all store
   storeAdmin = async () => {
+    this.setState({ isLoading: true });
     const jwt = getJwt();
     await axios
       .get("https://mffood.herokuapp.com/api/stores/", {
         headers: {
           token: jwt
-        }
+        },
+        cancelToken: this.signal.token
       })
       .then(res => {
         const store = res.data;
-        this.setState({ store });
+        this.setState({ store, isLoading: true });
       })
-      .catch(err => console.log(err));
+      .catch(err => {
+        if (axios.isCancel(err)) {
+          console.log(err.message);
+        } else {
+          this.setState({ isLoading: false });
+        }
+      });
   };
 
-  //!Start ROLE_STOREADMIN
+  //!Store by ROLE_STOREADMIN
   storeData = async () => {
+    this.setState({ isLoading: true });
     const jwt = getJwt();
     const id = this.state.id;
     await axios
       .get("https://mffood.herokuapp.com/api/stores/byUser/" + id, {
         headers: {
           token: jwt
-        }
+        },
+        cancelToken: this.signal.token
       })
       .then(res => {
         const store = res.data;
-        this.setState({ store });
+        this.setState({ store, isLoading: true });
       })
-      .catch(err => console.log(err));
+      .catch(err => {
+        if (axios.isCancel(err)) {
+          console.log(err.message);
+        } else {
+          this.setState({ isLoading: false });
+        }
+      });
   };
 
   orderData = async id => {
@@ -82,6 +101,10 @@ export default class ManageOrder extends Component {
     });
     //Cập nhật list data
     this.retrievedData();
+  }
+
+  componentWillUnmount() {
+    this.signal.cancel("Api is being canceled");
   }
 
   //Begin Search

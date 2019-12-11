@@ -6,7 +6,10 @@ import axios from "axios";
 const { Option } = Select;
 
 export default class ManageStore extends Component {
+  signal = axios.CancelToken.source();
+
   state = {
+    isLoading: false,
     store: [],
     category: [],
     role: "",
@@ -24,35 +27,51 @@ export default class ManageStore extends Component {
 
   //!all store
   storeDataAdmin = async () => {
+    this.setState({ isLoading: true });
     const jwt = getJwt();
     await axios
       .get("https://mffood.herokuapp.com/api/stores/", {
         headers: {
           token: jwt
-        }
+        },
+        cancelToken: this.signal.token
       })
       .then(res => {
         const store = res.data;
-        this.setState({ store });
+        this.setState({ store, isLoading: true });
       })
-      .catch(err => console.log(err));
+      .catch(err => {
+        if (axios.isCancel(err)) {
+          console.log(err.message);
+        } else {
+          this.setState({ isLoading: false });
+        }
+      });
   };
 
   //!store by ROLE_STOREADMIN
   storeData = async () => {
+    this.setState({ isLoading: true });
     const jwt = getJwt();
     const id = this.state.id;
     await axios
       .get("https://mffood.herokuapp.com/api/stores/byUser/" + id, {
         headers: {
           token: jwt
-        }
+        },
+        cancelToken: this.signal.token
       })
       .then(res => {
         const store = res.data;
-        this.setState({ store });
+        this.setState({ store, isLoading: true });
       })
-      .catch(err => console.log(err));
+      .catch(err => {
+        if (axios.isCancel(err)) {
+          console.log(err.message);
+        } else {
+          this.setState({ isLoading: false });
+        }
+      });
   };
 
   async retrievedData() {
@@ -79,6 +98,10 @@ export default class ManageStore extends Component {
     });
     //Cập nhật list data
     this.retrievedData();
+  }
+
+  componentWillUnmount() {
+    this.signal.cancel("Api is being canceled");
   }
 
   //Begin Search
