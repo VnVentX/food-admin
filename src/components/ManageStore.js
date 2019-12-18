@@ -248,6 +248,7 @@ export default class ManageStore extends Component {
       ) {
         //!save store
         values.idUser = this.state.id;
+        values.idCate = Array.of(values.idCate);
         const jwt = getJwt();
         await axios
           .post("https://mffood.herokuapp.com/api/stores/", values, {
