@@ -1,83 +1,63 @@
-import React, { Component } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 
-export default class Login extends Component {
-  constructor() {
-    super();
-    this.state = {
-      email: "",
-      password: ""
-    };
-    this.onInputChange = this.onInputChange.bind(this);
-    this.onSubmit = this.onSubmit.bind(this);
-  }
+export default function Login(props) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  onSubmit = async e => {
+  const onSubmit = async e => {
     e.preventDefault();
     await axios
       .post("https://mffood.herokuapp.com/api/users/login?isGmail=false", {
-        email: this.state.email,
-        password: this.state.password
+        email,
+        password
       })
       .then(res => {
         if (
           res.data.userRoleDTO !== "ROLE_STOREADMIN" ||
           res.data.userRoleDTO !== "ROLE_ADMIN"
         ) {
-          this.props.history.push("/login");
+          props.history.push("/login");
         }
         localStorage.setItem("token", res.data.tokenJWT);
         localStorage.setItem("id", res.data.idUser);
         localStorage.setItem("role", res.data.userRoleDTO);
-        this.props.history.push("/order");
+        props.history.push("/order");
       })
       .catch(e => {
         console.log(e);
       });
   };
 
-  onInputChange(e) {
-    this.setState({
-      [e.target.name]: e.target.value
-    });
-  }
+  return (
+    <div>
+      <form className="login-form" onSubmit={onSubmit}>
+        <h1>Food Admin</h1>
+        <div className="txtb">
+          <input
+            type="text"
+            name="email"
+            placeholder="Email"
+            value={email}
+            onChange={e => {
+              setEmail(e.target.value);
+            }}
+          />
+        </div>
 
-  render() {
-    return (
-      <div>
-        <form
-          className="login-form"
-          onSubmit={e => {
-            this.onSubmit(e);
-          }}
-        >
-          <h1>Food Admin</h1>
-          <div className="txtb">
-            <input
-              type="text"
-              name="email"
-              placeholder="Email"
-              value={this.state.email}
-              onChange={e => {
-                this.onInputChange(e);
-              }}
-            />
-          </div>
-
-          <div className="txtb">
-            <input
-              type="password"
-              name="password"
-              placeholder="Password"
-              value={this.state.password}
-              onChange={e => {
-                this.onInputChange(e);
-              }}
-            />
-          </div>
-          <input type="submit" className="logbtn" value="Login"></input>
-        </form>
-      </div>
-    );
-  }
+        <div className="txtb">
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            value={password}
+            onChange={e => {
+              setPassword(e.target.value);
+            }}
+          />
+        </div>
+        <input type="submit" className="logbtn" value="Login"></input>
+      </form>
+    </div>
+  );
 }
