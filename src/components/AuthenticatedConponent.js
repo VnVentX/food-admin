@@ -5,7 +5,7 @@ import { withRouter } from "react-router-dom";
 
 class AuthenticatedConponent extends Component {
   state = {
-    user: ""
+    user: "",
   };
 
   async componentDidMount() {
@@ -17,17 +17,17 @@ class AuthenticatedConponent extends Component {
     await axios
       .get("https://mffood.herokuapp.com/api/users/" + id, {
         headers: {
-          token: jwt
-        }
+          token: jwt,
+        },
       })
-      .then(res => {
+      .then((res) => {
         //item storage phải ở trước setState
         localStorage.setItem("user", res.data.email);
         this.setState({
-          user: res.data.email
+          user: res.data.email,
         });
       })
-      .catch(err => this.props.history.push("/login"));
+      .catch((err) => this.props.history.push("/login"));
   }
 
   render() {

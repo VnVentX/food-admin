@@ -16,7 +16,7 @@ export default class ManageOrder extends Component {
     role: "",
     id: "",
     searchText: "",
-    searchedColumn: ""
+    searchedColumn: "",
   };
 
   //!all store
@@ -26,15 +26,15 @@ export default class ManageOrder extends Component {
     await axios
       .get("https://mffood.herokuapp.com/api/stores/", {
         headers: {
-          token: jwt
+          token: jwt,
         },
-        cancelToken: this.signal.token
+        cancelToken: this.signal.token,
       })
-      .then(res => {
+      .then((res) => {
         const store = res.data;
         this.setState({ store, isLoading: true });
       })
-      .catch(err => {
+      .catch((err) => {
         if (axios.isCancel(err)) {
           console.log(err.message);
         } else {
@@ -51,15 +51,15 @@ export default class ManageOrder extends Component {
     await axios
       .get("https://mffood.herokuapp.com/api/stores/byUser/" + id, {
         headers: {
-          token: jwt
+          token: jwt,
         },
-        cancelToken: this.signal.token
+        cancelToken: this.signal.token,
       })
-      .then(res => {
+      .then((res) => {
         const store = res.data;
         this.setState({ store, isLoading: true });
       })
-      .catch(err => {
+      .catch((err) => {
         if (axios.isCancel(err)) {
           console.log(err.message);
         } else {
@@ -68,19 +68,19 @@ export default class ManageOrder extends Component {
       });
   };
 
-  orderData = async id => {
+  orderData = async (id) => {
     const jwt = getJwt();
     await axios
       .get("https://mffood.herokuapp.com/api/orders/byStore/" + id, {
         headers: {
-          token: jwt
-        }
+          token: jwt,
+        },
       })
-      .then(res => {
+      .then((res) => {
         const order = res.data;
         this.setState({ order });
       })
-      .catch(err => console.log(err));
+      .catch((err) => console.log(err));
   };
 
   retrievedData() {
@@ -97,7 +97,7 @@ export default class ManageOrder extends Component {
     const id = getID();
     await this.setState({
       role,
-      id
+      id,
     });
     //Cập nhật list data
     this.retrievedData();
@@ -108,21 +108,21 @@ export default class ManageOrder extends Component {
   }
 
   //Begin Search
-  getColumnSearchProps = dataIndex => ({
+  getColumnSearchProps = (dataIndex) => ({
     filterDropdown: ({
       setSelectedKeys,
       selectedKeys,
       confirm,
-      clearFilters
+      clearFilters,
     }) => (
       <div style={{ padding: 8 }}>
         <Input
-          ref={node => {
+          ref={(node) => {
             this.searchInput = node;
           }}
           placeholder={`Search ${dataIndex}`}
           value={selectedKeys[0]}
-          onChange={e =>
+          onChange={(e) =>
             setSelectedKeys(e.target.value ? [e.target.value] : [])
           }
           onPressEnter={() =>
@@ -148,20 +148,17 @@ export default class ManageOrder extends Component {
         </Button>
       </div>
     ),
-    filterIcon: filtered => (
+    filterIcon: (filtered) => (
       <Icon type="search" style={{ color: filtered ? "#1890ff" : undefined }} />
     ),
     onFilter: (value, record) =>
-      record[dataIndex]
-        .toString()
-        .toLowerCase()
-        .includes(value.toLowerCase()),
-    onFilterDropdownVisibleChange: visible => {
+      record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
+    onFilterDropdownVisibleChange: (visible) => {
       if (visible) {
         setTimeout(() => this.searchInput.select());
       }
     },
-    render: text =>
+    render: (text) =>
       this.state.searchedColumn === dataIndex ? (
         <Highlighter
           highlightStyle={{ backgroundColor: "#ffc069", padding: 0 }}
@@ -171,18 +168,18 @@ export default class ManageOrder extends Component {
         />
       ) : (
         text
-      )
+      ),
   });
 
   handleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
     this.setState({
       searchText: selectedKeys[0],
-      searchedColumn: dataIndex
+      searchedColumn: dataIndex,
     });
   };
 
-  handleReset = clearFilters => {
+  handleReset = (clearFilters) => {
     clearFilters();
     this.setState({ searchText: "" });
   };
@@ -192,12 +189,12 @@ export default class ManageOrder extends Component {
   handleCancel = () => {
     this.setState({
       visible: false,
-      order: []
+      order: [],
     });
   };
 
   //!Verify Action
-  verifyOrder = async record => {
+  verifyOrder = async (record) => {
     const jwt = getJwt();
     const idOrders = record.idOrders;
     try {
@@ -205,8 +202,8 @@ export default class ManageOrder extends Component {
         method: "PUT", // or 'PUT'
         headers: {
           "Content-Type": "application/json",
-          token: jwt
-        }
+          token: jwt,
+        },
       });
       this.orderData(this.state.storeID);
     } catch (error) {
@@ -221,31 +218,31 @@ export default class ManageOrder extends Component {
         title: "ID Order",
         dataIndex: "idOrders",
         key: "idOrders",
-        ...this.getColumnSearchProps("idOrders")
+        ...this.getColumnSearchProps("idOrders"),
       },
       {
         title: "Customer Name",
         dataIndex: "userFullName",
         key: "userFullName",
-        ...this.getColumnSearchProps("userFullName")
+        ...this.getColumnSearchProps("userFullName"),
       },
       {
         title: "Total",
         dataIndex: "totalPrice",
         key: "totalPrice",
-        ...this.getColumnSearchProps("totalPrice")
+        ...this.getColumnSearchProps("totalPrice"),
       },
       {
         title: "Time",
         dataIndex: "createAt",
         key: "createAt",
-        ...this.getColumnSearchProps("createAt")
+        render: (createAt) => <span>{createAt.split(" ")[0]}</span>,
       },
       {
         title: "Status",
         dataIndex: "status",
         key: "status",
-        render: status => (
+        render: (status) => (
           <span>
             {status === "PENDING" ? (
               <Tag color={"volcano"} key={status}>
@@ -257,13 +254,13 @@ export default class ManageOrder extends Component {
               </Tag>
             )}
           </span>
-        )
+        ),
       },
       {
         title: "Action",
         dataIndex: "",
         key: "x",
-        render: record => (
+        render: (record) => (
           <button
             className="ant-btn-link"
             onClick={async () => {
@@ -272,8 +269,8 @@ export default class ManageOrder extends Component {
           >
             Change Status
           </button>
-        )
-      }
+        ),
+      },
     ];
 
     //Order Detail Admin
@@ -282,31 +279,31 @@ export default class ManageOrder extends Component {
         title: "ID Order",
         dataIndex: "idOrders",
         key: "idOrders",
-        ...this.getColumnSearchProps("idOrders")
+        ...this.getColumnSearchProps("idOrders"),
       },
       {
         title: "Customer Name",
         dataIndex: "userFullName",
         key: "userFullName",
-        ...this.getColumnSearchProps("userFullName")
+        ...this.getColumnSearchProps("userFullName"),
       },
       {
         title: "Total",
         dataIndex: "totalPrice",
         key: "totalPrice",
-        ...this.getColumnSearchProps("totalPrice")
+        ...this.getColumnSearchProps("totalPrice"),
       },
       {
         title: "Time",
         dataIndex: "createAt",
         key: "createAt",
-        ...this.getColumnSearchProps("createAt")
+        render: (createAt) => <span>{createAt.split(" ")[0]}</span>,
       },
       {
         title: "Status",
         dataIndex: "status",
         key: "status",
-        render: status => (
+        render: (status) => (
           <span>
             {status === "PENDING" ? (
               <Tag color={"volcano"} key={status}>
@@ -318,8 +315,8 @@ export default class ManageOrder extends Component {
               </Tag>
             )}
           </span>
-        )
-      }
+        ),
+      },
     ];
 
     //Store Columns
@@ -328,33 +325,33 @@ export default class ManageOrder extends Component {
         title: "Store Name",
         dataIndex: "name",
         key: "name",
-        ...this.getColumnSearchProps("name")
+        ...this.getColumnSearchProps("name"),
       },
       {
         title: "Description",
         dataIndex: "description",
         key: "description",
-        ...this.getColumnSearchProps("description")
+        ...this.getColumnSearchProps("description"),
       },
       {
         title: "Action",
         dataIndex: "",
         key: "x",
-        render: record => (
+        render: (record) => (
           <button
             className="ant-btn-link"
             onClick={async () => {
               this.orderData(record.idStore);
               this.setState({
                 visible: true,
-                storeID: record.idStore
+                storeID: record.idStore,
               });
             }}
           >
             View Orders
           </button>
-        )
-      }
+        ),
+      },
     ];
 
     //Ép kiểu về Array cho object
@@ -372,7 +369,7 @@ export default class ManageOrder extends Component {
           {...this.state}
           className="components-table-demo-nested"
           columns={storeColumns}
-          rowKey={datasource => datasource.idStore}
+          rowKey={(datasource) => datasource.idStore}
           dataSource={datasource}
         />
         <OrderDetail
@@ -400,29 +397,29 @@ const OrderDetail =
         role,
         columnStore,
         columnAdmin,
-        datasource
+        datasource,
       } = this.props;
 
-      const listOrderDetail = record => {
+      const listOrderDetail = (record) => {
         const columns = [
           {
             title: "Product Name",
             dataIndex: "productName",
-            key: "productName"
+            key: "productName",
           },
           {
             title: "Quantity",
             dataIndex: "quantity",
-            key: "quantity"
+            key: "quantity",
           },
-          { title: "Price", dataIndex: "unitPrice", key: "unitPrice" }
+          { title: "Price", dataIndex: "unitPrice", key: "unitPrice" },
         ];
         const data = record.orderDetail;
         return (
           <Table
             columns={columns}
             dataSource={data}
-            rowKey={data => data.idProduct}
+            rowKey={(data) => data.idProduct}
             pagination={false}
           />
         );
@@ -440,7 +437,7 @@ const OrderDetail =
             <Table
               className="components-table-demo-nested"
               columns={columnStore}
-              rowKey={datasource => datasource.idOrders}
+              rowKey={(datasource) => datasource.idOrders}
               dataSource={datasource}
               expandedRowRender={listOrderDetail}
             />
@@ -448,7 +445,7 @@ const OrderDetail =
             <Table
               className="components-table-demo-nested"
               columns={columnAdmin}
-              rowKey={datasource => datasource.idOrders}
+              rowKey={(datasource) => datasource.idOrders}
               dataSource={datasource}
               expandedRowRender={listOrderDetail}
             />
